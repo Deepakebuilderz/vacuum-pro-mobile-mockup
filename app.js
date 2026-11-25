@@ -265,6 +265,7 @@ document.addEventListener('click',e=>{
  render(go);
 });
 view.addEventListener('submit',e=>{
+ if(e.target.method==='dialog')return;
  e.preventDefault();const data=new FormData(e.target);
  const id=e.target.id;
  if(['login','signup'].includes(id)){
