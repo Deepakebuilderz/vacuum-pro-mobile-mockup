@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find a part · Vacuum PRO</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .finder-search { display: grid; gap: 12px; }
+    .finder-search h1, .finder-search p { margin: 0; }
+    .finder-search p { color: var(--muted); font-size: 13px; }
+    .finder-controls, .finder-entry { display: grid; gap: 4px; min-width: 0; }
+    .finder-entry form { position: relative; }
+    .finder-entry input {
+      margin: 0;
+      min-height: 48px;
+      padding-inline: 13px 50px;
+      border-radius: 12px;
+      background: #f6f9fd;
+      font-size: 16px;
+      font-weight: 400;
+    }
+    .finder-entry .finder-submit {
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-end: 2px;
+      transform: translateY(-50%);
+      display: grid;
+      place-items: center;
+      width: 44px;
+      min-height: 44px;
+      padding: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    .finder-submit svg {
+      width: 32px;
+      height: 32px;
+      padding: 7px;
+      border-radius: 8px;
+      background: #203b66;
+      fill: none;
+      stroke: white;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+    }
+    .finder-examples { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; }
+    .finder-examples button {
+      min-height: 44px;
+      padding: 0 2px;
+      color: #244b81;
+      background: transparent;
+      box-shadow: none;
+      font-size: 12px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .finder-controls .finder-scan {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      min-height: 48px;
+      gap: 9px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: #f4f7fc;
+    }
+    .finder-controls .scan-icon { width: 28px; height: 28px; }
+    .finder-controls .scan-icon svg { width: 17px; height: 17px; }
+    .finder-controls .finder-scan strong { font-size: 13px; }
+    .finder-suggestions { display: grid; gap: 8px; }
+    .finder-suggestions h2 { margin: 0; font-size: 18px; }
+    .finder-suggestions .product-grid button { overflow-wrap: anywhere; }
+    .finder-suggestions .product-grid img { background: #f7f9fc; border-radius: 8px; }
+    .finder-hint { font-size: 13px; color: var(--muted); }
+    .finder-hint summary { cursor: pointer; font-weight: 700; padding-block: 10px; }
+    .finder-hint p { margin: 0; }
+  </style>
+</head>
+<body data-screen="find">
+  <div id="shell"><header><img src="logo.png" alt="Vacuum PRO"><small>DEMO</small></header><div class="stage"><aside class="story" aria-label="Vacuum PRO parts"><div class="story-content"><div class="eyebrow">VACUUM PRO / PARTS &amp; ACCESSORIES</div><h2>The right part starts here.</h2><p>Find replacement bags, filters and more by model, part number or a photo of the label.</p><div class="tags"><span>Vacuum bags</span><span>Filters</span><span>Belts &amp; accessories</span></div></div></aside><main id="view"></main></div><nav aria-label="Store navigation" id="nav"></nav></div>
+  <script src="app.js"></script>
+  <script>
+    mountScreen(() => `
+      <section class="finder-search" aria-labelledby="finder-title">
+        <h1 id="finder-title" tabindex="-1">Find a part</h1>
+        <p>Search by model, brand or part number.</p>
+        <div class="finder-controls">
+          <div class="finder-entry">
+            <form id="search" role="search">
+              <input name="query" type="search" aria-label="Model, brand or part number"
+                value="${escapeHTML(query)}" placeholder="e.g. Oreck XL2100" enterkeyhint="search" required>
+              <button type="submit" class="finder-submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true">${tabIcons.find}</svg></button>
+            </form>
+            <div class="finder-examples">
+              <span class="quiet">Try</span>
+              <button type="button" data-query="Oreck XL2100">Oreck XL2100</button>
+              <button type="button" data-query="4010808S">#4010808S</button>
+            </div>
+          </div>
+          <button class="finder-scan" type="button" data-go="scan">
+            <span class="scan-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${tabIcons.scan}</svg></span>
+            <span><strong>Scan a model or part label</strong></span>
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+      </section>
+      <section class="finder-suggestions">
+        <h2>Suggested parts</h2>
+        ${grid([0, 8, 9, 10, 11, 1])}
+        ${button('Browse all parts', 'browse', true)}
+      </section>
+      <details class="finder-hint">
+        <summary>Where do I find the model or part number?</summary>
+        <p>Check near the power cord, under the vacuum base, or on the old part.</p>
+      </details>
+    `);
+
+    view.addEventListener('click', event => {
+      const example = event.target.closest('button[data-query]');
+      if (!example) return;
+      const search = view.querySelector('#search');
+      search.elements.query.value = example.dataset.query;
+      search.requestSubmit();
+    });
+  </script>
+</body>
+</html>

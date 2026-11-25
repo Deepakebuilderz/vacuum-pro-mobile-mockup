@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home · Vacuum PRO</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .stage[data-page="home"] .unified-find button {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 11px;
+      min-height: 64px;
+      padding: 10px 13px;
+      border-radius: 15px;
+      background: linear-gradient(105deg, #182d52, #284f86);
+    }
+    .stage[data-page="home"] .unified-find button > svg,
+    .category-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: #e6eefb;
+    }
+    .stage[data-page="home"] .unified-find button > svg {
+      padding: 7px;
+      background: #ffffff24;
+    }
+    .finder-arrow { font-size: 17px; }
+    .home-shop button[data-go="browse"] {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      min-height: 52px;
+      padding: 7px 12px;
+      background: #f6f9ff;
+    }
+    .category-icon { display: grid; place-items: center; }
+    .category-icon svg {
+      width: 19px;
+      height: 19px;
+      fill: none;
+      stroke: #234c8a;
+      stroke-width: 1.6;
+      stroke-linejoin: round;
+    }
+    .home-brands { gap: 8px; }
+    .home-brands span { padding: 5px 12px; background: #f4f7fd; }
+    .home-shop .product-grid button { overflow-wrap: anywhere; }
+    .home-shop .product-grid img { border-radius: 8px; background: #f7f9fc; }
+  </style>
+</head>
+<body data-screen="home">
+  <div id="shell"><header><img src="logo.png" alt="Vacuum PRO"><small>DEMO</small></header><div class="stage"><aside class="story" aria-label="Vacuum PRO parts"><div class="story-content"><div class="eyebrow">VACUUM PRO / PARTS &amp; ACCESSORIES</div><h2>The right part starts here.</h2><p>Find replacement bags, filters and more by model, part number or a photo of the label.</p><div class="tags"><span class="category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 8V6a4 4 0 0 1 8 0v2M5 8h14l1 12H4z"/></svg></span><span>Vacuum bags</span><span>Filters</span><span>Belts &amp; accessories</span></div></div></aside><main id="view"></main></div><nav aria-label="Store navigation" id="nav"></nav></div>
+  <script src="app.js"></script>
+  <script>
+    mountScreen(() => '<section class="home-banner"><div class="label">Vacuum parts &amp; accessories</div>'+title('Find the right vacuum part')+'<p>Search by model, part number or a photo of the label.</p></section>'+
+ '<div class="home-tools unified-find"><button type="button" data-go="find"><svg viewBox="0 0 24 24" aria-hidden="true">'+tabIcons.find+'</svg><span>Find a part<small>Search by number or scan a photo</small></span><span class="finder-arrow" aria-hidden="true">→</span></button></div>'+
+ '<section class="home-shop"><h2>Shop by category</h2><button type="button" data-go="browse"><span class="category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 8V6a4 4 0 0 1 8 0v2M5 8h14l1 12H4z"/></svg></span><span>All parts &amp; accessories</span><span aria-hidden="true">›</span></button></section>'+
+ '<section class="home-shop"><h2>Popular brands</h2><div class="home-brands"><span>Oreck</span><span>Dyson</span><span>Hoover</span></div></section><section class="home-shop"><h2>Shop vacuum parts</h2>'+grid([0, 8, 9, 10, 11, 1])+'</section><section class="home-shop"><button type="button" class="home-help" data-go="support"><span class="feature-copy"><strong>Not sure what fits?</strong><span>Get help choosing a compatible part.</span></span><span aria-hidden="true">›</span></button></section>');
+  </script>
+</body>
+</html>

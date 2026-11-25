@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scan a label · Vacuum PRO</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .scan-content {
+      width: min(100%, 340px);
+      margin: auto;
+      display: grid;
+      gap: 14px;
+      text-align: center;
+    }
+    .scan-content > * { margin: 0; }
+    .scan-content .preview { width: auto; margin-inline: auto; }
+    .scan-heading h1 { margin: 0 0 7px; }
+    .scan-heading p { margin: 0; color: var(--muted); font-size: 14px; }
+    .scan-example { display: grid; gap: 9px; margin: 0; }
+    .scan-example figcaption { color: var(--muted); font-size: 12px; text-wrap: balance; }
+    .scan-viewfinder {
+      display: grid;
+      place-items: center;
+      min-height: 156px;
+      padding: 16px;
+      border-radius: 19px;
+      background: radial-gradient(ellipse at 50% 25%, #305583, #122443 78%);
+    }
+    .scan-guide {
+      --corner: #9ed5ff;
+      display: grid;
+      place-items: center;
+      width: min(100%, 206px);
+      min-height: 104px;
+      padding: 15px;
+      background:
+        linear-gradient(var(--corner), var(--corner)) left top / 20px 2px,
+        linear-gradient(var(--corner), var(--corner)) left top / 2px 20px,
+        linear-gradient(var(--corner), var(--corner)) right top / 20px 2px,
+        linear-gradient(var(--corner), var(--corner)) right top / 2px 20px,
+        linear-gradient(var(--corner), var(--corner)) left bottom / 20px 2px,
+        linear-gradient(var(--corner), var(--corner)) left bottom / 2px 20px,
+        linear-gradient(var(--corner), var(--corner)) right bottom / 20px 2px,
+        linear-gradient(var(--corner), var(--corner)) right bottom / 2px 20px;
+      background-repeat: no-repeat;
+    }
+    .scan-model {
+      display: grid;
+      gap: 3px;
+      width: min(100%, 146px);
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f7faff;
+      box-shadow: 0 6px 16px #0003;
+      color: var(--navy);
+      font-family: ui-monospace, monospace;
+    }
+    .scan-model small { font-size: 10px; letter-spacing: .08em; }
+    .scan-model strong { font-size: 22px; letter-spacing: .06em; }
+    .scan-viewfinder:has(.preview:not([hidden])) .scan-guide { display: none; }
+    .scan-viewfinder .preview { max-height: 172px; margin: 0; border-radius: 8px; object-fit: contain; }
+    .scan-picker {
+      position: relative;
+      display: grid;
+      grid-auto-flow: column;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 8px 12px;
+      border-radius: 11px;
+      background: linear-gradient(105deg, #182d52, #284f86);
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .scan-picker svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+    .scan-picker:focus-within { outline: 3px solid #4779c4; outline-offset: 2px; }
+    .scan-picker input { position: absolute; inset: 0; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .scan-manual { background: transparent; color: #244b81; box-shadow: none; text-align: center; text-decoration: underline; }
+  </style>
+</head>
+<body data-screen="scan">
+  <div id="shell"><header><img src="logo.png" alt="Vacuum PRO"><small>DEMO</small></header><div class="stage"><aside class="story" aria-label="Vacuum PRO parts"><div class="story-content"><div class="eyebrow">VACUUM PRO / PARTS &amp; ACCESSORIES</div><h2>The right part starts here.</h2><p>Find replacement bags, filters and more by model, part number or a photo of the label.</p><div class="tags"><span>Vacuum bags</span><span>Filters</span><span>Belts &amp; accessories</span></div></div></aside><main id="view"></main></div><nav aria-label="Store navigation" id="nav"></nav></div>
+  <script src="app.js"></script>
+  <script>
+    mountScreen(() => `
+      <div class="scan-content">
+        <section class="scan-heading">
+          ${title('Scan a label')}
+          <p>Use a clear photo of the model sticker or the part number.</p>
+        </section>
+        <figure class="scan-example">
+          <div class="scan-viewfinder">
+            <div class="scan-guide" aria-hidden="true">
+              <div class="scan-model"><small>MODEL NO.</small><strong>XL2100</strong></div>
+            </div>
+            <img class="preview" id="preview" alt="Selected label photo" hidden>
+          </div>
+          <figcaption>Keep the full number in frame and avoid glare.</figcaption>
+        </figure>
+        <label class="scan-picker">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          Choose label photo
+          <input id="photo" type="file" accept="image/*" aria-label="Choose label photo">
+        </label>
+        <p id="scan-preview-note" class="quiet" aria-live="polite" hidden></p>
+        <button class="scan-manual" type="button" data-go="find">Enter the number instead</button>
+      </div>
+    `);
+  </script>
+</body>
+</html>

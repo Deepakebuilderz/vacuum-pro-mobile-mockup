@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tracking · Vacuum PRO</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .stage[data-page="tracking"] h1 { font-size: 25px; }
+    .shipment-summary { display: grid; gap: 9px; border: 1px solid var(--rule); border-radius: 15px; padding: 15px; background: #eef5fd; }
+    .shipment-summary h2, .shipment-summary p { margin: 0; }
+    .shipment-summary h2 { font-size: 17px; }
+    .tracking-help { align-self: center; color: #244b81; background: transparent; box-shadow: none; text-decoration: underline; }
+    .track-shop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border-radius: 11px;
+      background: #5433eb;
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .shop-handoff { width: min(315px, calc(100% - 36px)); padding: 20px; border: 0; border-radius: 16px; color: var(--deep); }
+    .shop-handoff::backdrop { background: #12244385; }
+    .shop-handoff h2 { margin-bottom: 8px; }
+    .shop-handoff .secondary { width: 100%; margin-top: 8px; text-align: center; }
+  </style>
+</head>
+<body data-screen="tracking">
+  <div id="shell"><header><img src="logo.png" alt="Vacuum PRO"><small>DEMO</small></header><div class="stage"><aside class="story" aria-label="Vacuum PRO parts"><div class="story-content"><div class="eyebrow">VACUUM PRO / PARTS &amp; ACCESSORIES</div><h2>The right part starts here.</h2><p>Find replacement bags, filters and more by model, part number or a photo of the label.</p><div class="tags"><span>Vacuum bags</span><span>Filters</span><span>Belts &amp; accessories</span></div></div></aside><main id="view"></main></div><nav aria-label="Store navigation" id="nav"></nav></div>
+  <script src="app.js"></script>
+  <script>
+    mountScreen(() => {
+      const order = visibleOrder();
+      const shipment = order.shipment;
+      const heading = title('Track shipment') + '<p class="quiet">Order #' + order.number + '</p>';
+      const message = shipment
+        ? '<div class="shipment-summary"><h2>Tracking link by email</h2><p class="quiet">Open the shipping confirmation email from Vacuum PRO and use the tracking link to see the latest carrier updates.</p></div>'
+        : '<div class="shipment-summary"><h2>Preparing your order</h2><p class="quiet">Vacuum PRO will email a tracking link when your order ships.</p></div>';
+      const emailPreview = shipment
+        ? '<section class="shipment-summary"><p class="label">Shipping email preview · Demo</p>' +
+          '<h2>Your order is on the way</h2><p class="quiet">Order #' + order.number + '</p>' +
+          actions(['View your order','detail']) +
+          '<button type="button" class="track-shop" data-shop-preview>Track order with Shop</button></section>' +
+          '<dialog class="shop-handoff" aria-labelledby="shop-handoff-title">' +
+          '<h2 id="shop-handoff-title">Continue to Shop</h2>' +
+          '<p class="quiet">Use the Shop app or sign in on shop.com with the email you used at checkout. Eligible orders appear in Orders.</p>' +
+          '<p class="quiet">This demo order is local to the mockup.</p>' +
+          '<a class="track-shop" href="https://shop.com/" target="_blank" rel="noopener">Open Shop website</a>' +
+          '<button type="button" class="secondary" data-shop-close autofocus>Back to tracking</button></dialog>'
+        : '';
+      return heading + message + emailPreview +
+        '<button class="tracking-help" type="button" data-go="support">' +
+        (shipment ? 'Can’t find the tracking email?' : 'Get order help') + '</button>';
+    });
+
+    view.addEventListener('click', event => {
+      if (event.target.closest('[data-shop-preview]')) view.querySelector('.shop-handoff')?.showModal();
+      if (event.target.closest('[data-shop-close]')) view.querySelector('.shop-handoff')?.close();
+    });
+  </script>
+</body>
+</html>

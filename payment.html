@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payment · Vacuum PRO</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .stage[data-page="payment"] main { gap: 12px; }
+    .stage[data-page="payment"] h1 { font-size: 24px; }
+    .stage[data-page="payment"] .progress {
+      padding: 4px;
+      border-radius: 11px;
+      background: #edf3fb;
+      gap: 3px;
+    }
+    .stage[data-page="payment"] .progress > * {
+      border: 0;
+      padding: 6px 2px;
+      font-size: 11px;
+      border-radius: 8px;
+    }
+    .stage[data-page="payment"] .progress [aria-current] { background: #203b66; color: white; }
+    .stage[data-page="payment"] .checkout-box h2 { font-size: 17px; }
+    .stage[data-page="payment"] .checkout-box div { font-size: 13px; }
+    .stage[data-page="payment"] .checkout-box div span:last-child { text-align: right; }
+    #payment fieldset { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+    #payment legend { margin-bottom: 7px; padding: 0; font-size: 14px; font-weight: 750; }
+    #payment .option {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) 18px;
+      gap: 10px;
+      min-height: 60px;
+      padding: 9px 11px;
+    }
+    #payment .option input { grid-column: 3; grid-row: 1; }
+    .pay-card {
+      grid-column: 1;
+      grid-row: 1;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      height: 27px;
+      padding: 5px;
+      border-radius: 6px;
+      color: #284f86;
+      background: #e3ebf7;
+    }
+    .pay-card::before, .pay-card::after {
+      content: "";
+      width: 50%;
+      height: 3px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+    .pay-card::after { width: 80%; opacity: .55; }
+    #payment .option:has(:checked) .pay-card {
+      color: #fff;
+      background: linear-gradient(105deg, #182d52, #416ca4);
+    }
+    .pay-card-copy { grid-column: 2; grid-row: 1; display: grid; gap: 2px; line-height: 1.3; }
+    .pay-card-copy small { color: var(--muted); font-size: 12px; font-weight: 400; }
+    .express-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    #payment .express-options .option {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      min-height: 44px;
+      padding: 5px;
+      font-size: 11px;
+    }
+    #payment .express-options input { flex: 0 0 14px; width: 14px; min-height: 14px; }
+    #payment button { background: linear-gradient(105deg, #182d52, #284f86); }
+  </style>
+</head>
+<body data-screen="payment">
+  <div id="shell"><header><img src="logo.png" alt="Vacuum PRO"><small>DEMO</small></header><div class="stage"><aside class="story" aria-label="Vacuum PRO parts"><div class="story-content"><div class="eyebrow">VACUUM PRO / PARTS &amp; ACCESSORIES</div><h2>The right part starts here.</h2><p>Find replacement bags, filters and more by model, part number or a photo of the label.</p><div class="tags"><span>Vacuum bags</span><span>Filters</span><span>Belts &amp; accessories</span></div></div></aside><main id="view"></main></div><nav aria-label="Store navigation" id="nav"></nav></div>
+  <script src="app.js"></script>
+  <script>
+    mountScreen(() => {
+      const cardLabel = (name, detail) =>
+        '<span class="pay-card" aria-hidden="true"></span>' +
+        '<span class="pay-card-copy"><strong>' + name + '</strong><small>' + detail + '</small></span>';
+      const express = '<fieldset><legend>Express checkout</legend><div class="express-options">' +
+        option('method', 'shop-pay', 'Shop Pay', false) +
+        option('method', 'paypal-express', 'PayPal', false) +
+        option('method', 'google-pay', 'Google Pay', false) +
+        '</div></fieldset>';
+      const options = '<fieldset><legend>Payment method</legend>' +
+        option('method', 'credit-card', cardLabel('Credit card', 'Visa, Mastercard, Amex and more'), true) +
+        option('method', 'paypal', cardLabel('PayPal', 'Pay with your PayPal account'), false) +
+        option('method', 'affirm', cardLabel('Affirm – Pay Over Time', 'Subject to eligibility'), false) +
+        '</fieldset>';
+      return step(2, 'Payment', 'Shopify checkout preview · No real charge') +
+        summary(true) + form('payment', express + options, 'Place demo order');
+    });
+  </script>
+</body>
+</html>

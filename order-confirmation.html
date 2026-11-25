@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order confirmation · Vacuum PRO</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .confirmation-hero { text-align: center; padding: 23px 12px; border-radius: 18px; background: linear-gradient(160deg, #edf8f4, #f4f8ff); }
+    .confirmation-hero h1 { font-size: 26px; margin: 12px 0 5px; }
+    .confirmation-hero p, .confirmation-receipt p { margin: 0; }
+    .confirmation-mark { display: grid; place-items: center; margin: auto; width: 58px; height: 58px; border-radius: 50%; background: #d6efe4; color: #176347; }
+    .confirmation-mark svg { width: 29px; height: 29px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .confirmation-receipt { padding: 14px; border: 1px solid var(--rule); border-radius: 14px; }
+    .confirmation-receipt h2 { font-size: 16px; margin: 0 0 8px; }
+    .confirmation-receipt ul { margin: 0; padding: 0; list-style: none; }
+    .confirmation-receipt li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--rule); font-size: 13px; }
+    .confirmation-receipt li strong { white-space: nowrap; }
+    .success-dialog { width: min(310px, calc(100% - 40px)); padding: 23px; border: 0; border-radius: 20px; text-align: center; color: var(--deep); box-shadow: 0 20px 60px #12244345; }
+    .success-dialog::backdrop { background: #12244385; }
+    .success-dialog h2 { margin: 13px 0 5px; font-size: 22px; }
+    .success-dialog p { font-size: 13px; color: var(--muted); }
+    .success-dialog button { width: 100%; text-align: center; border-radius: 11px; }
+    .success-dialog[open] { animation: success-enter 320ms ease-out both; }
+    .success-dialog[open] .confirmation-mark { animation: success-pop 460ms ease-out both; }
+    .success-dialog[open] path { stroke-dasharray: 24; animation: success-draw 350ms 140ms ease-out both; }
+    @keyframes success-enter { from { opacity: 0; transform: translateY(12px); } }
+    @keyframes success-pop { from { transform: scale(.6); } 70% { transform: scale(1.12); } }
+    @keyframes success-draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .success-dialog[open], .success-dialog[open] .confirmation-mark, .success-dialog[open] path { animation: none; }
+    }
+  </style>
+</head>
+<body data-screen="thanks">
+  <div id="shell"><header><img src="logo.png" alt="Vacuum PRO"><small>DEMO</small></header><div class="stage"><aside class="story" aria-label="Vacuum PRO parts"><div class="story-content"><div class="eyebrow">VACUUM PRO / PARTS &amp; ACCESSORIES</div><h2>The right part starts here.</h2><p>Find replacement bags, filters and more by model, part number or a photo of the label.</p><div class="tags"><span>Vacuum bags</span><span>Filters</span><span>Belts &amp; accessories</span></div></div></aside><main id="view"></main></div><nav aria-label="Store navigation" id="nav"></nav></div>
+  <script src="app.js"></script>
+  <script>
+    const checkmark = '<span class="confirmation-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>';
+
+    mountScreen(() => {
+      const items = orderLines.map(([name, quantity]) =>
+        '<li><span>' + escapeHTML(name) + '</span><strong>× ' + quantity + '</strong></li>'
+      ).join('');
+      return `
+        <section class="confirmation-hero">
+          ${checkmark}
+          ${title('Order confirmed')}
+          <p class="quiet">Your demo order has been placed.</p>
+        </section>
+        <section class="confirmation-receipt">
+          <h2>Order #VP-1042</h2>
+          <ul>${items}</ul>
+        </section>
+        ${actions(['View order details','detail'], ['Continue shopping','home'])}
+        <dialog class="success-dialog" aria-labelledby="success-title" aria-describedby="success-description">
+          ${checkmark}
+          <h2 id="success-title">Order placed!</h2>
+          <p id="success-description">Demo order #VP-1042 is confirmed.</p>
+          <form method="dialog"><button autofocus>View confirmation</button></form>
+        </dialog>
+      `;
+    });
+
+    const successDialog = view.querySelector('.success-dialog');
+    if (successDialog && sessionStorage.getItem(orderCelebrationKey) === 'pending') {
+      sessionStorage.removeItem(orderCelebrationKey);
+      successDialog.showModal();
+      successDialog.addEventListener('close', () => view.querySelector('h1')?.focus());
+    }
+  </script>
+</body>
+</html>
