@@ -3,10 +3,27 @@
     "name": "Vacuum PRO",
     "slug": "vacuum-pro-mobile",
     "version": "0.1.0",
-    "platforms": ["android", "ios"],
+    "platforms": [
+      "android",
+      "ios"
+    ],
     "userInterfaceStyle": "light",
-    "ios": { "bundleIdentifier": "com.vacuumpro.mobile.dev" },
-    "android": { "package": "com.vacuumpro.mobile.dev" },
-    "plugins": ["expo-dev-client"]
+    "ios": {
+      "bundleIdentifier": "com.vacuumpro.mobile.dev"
+    },
+    "android": {
+      "package": "com.vacuumpro.mobile.dev"
+    },
+    "plugins": [
+      "expo-dev-client",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose a vacuum label or part photo to find replacement parts.",
+          "cameraPermission": "Photograph your vacuum label or part to find replacement parts.",
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }

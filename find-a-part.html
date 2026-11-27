@@ -6,122 +6,62 @@
   <title>Find a part · Vacuum PRO</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    .finder-search { display: grid; gap: 12px; }
-    .finder-search h1, .finder-search p { margin: 0; }
-    .finder-search p { color: var(--muted); font-size: 13px; }
-    .finder-controls, .finder-entry { display: grid; gap: 4px; min-width: 0; }
-    .finder-entry form { position: relative; }
-    .finder-entry input {
-      margin: 0;
-      min-height: 48px;
-      padding-inline: 13px 50px;
-      border-radius: 12px;
-      background: #f6f9fd;
-      font-size: 16px;
-      font-weight: 400;
-    }
-    .finder-entry .finder-submit {
-      position: absolute;
-      inset-block-start: 50%;
-      inset-inline-end: 2px;
-      transform: translateY(-50%);
-      display: grid;
-      place-items: center;
-      width: 44px;
-      min-height: 44px;
-      padding: 0;
-      background: transparent;
-      box-shadow: none;
-    }
-    .finder-submit svg {
-      width: 32px;
-      height: 32px;
-      padding: 7px;
-      border-radius: 8px;
-      background: #203b66;
-      fill: none;
-      stroke: white;
-      stroke-width: 1.7;
-      stroke-linecap: round;
-    }
-    .finder-examples { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; }
-    .finder-examples button {
-      min-height: 44px;
-      padding: 0 2px;
-      color: #244b81;
-      background: transparent;
-      box-shadow: none;
-      font-size: 12px;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .finder-controls .finder-scan {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      min-height: 48px;
-      gap: 9px;
-      padding: 6px 10px;
-      border-radius: 10px;
-      background: #f4f7fc;
-    }
-    .finder-controls .scan-icon { width: 28px; height: 28px; }
-    .finder-controls .scan-icon svg { width: 17px; height: 17px; }
-    .finder-controls .finder-scan strong { font-size: 13px; }
-    .finder-suggestions { display: grid; gap: 8px; }
-    .finder-suggestions h2 { margin: 0; font-size: 18px; }
-    .finder-suggestions .product-grid button { overflow-wrap: anywhere; }
-    .finder-suggestions .product-grid img { background: #f7f9fc; border-radius: 8px; }
-    .finder-hint { font-size: 13px; color: var(--muted); }
-    .finder-hint summary { cursor: pointer; font-weight: 700; padding-block: 10px; }
-    .finder-hint p { margin: 0; }
+    .finder-search { display:grid; gap:16px; }
+    .finder-heading h1 { margin:5px 0 8px; font-size:30px; letter-spacing:-.035em; }
+    .finder-eyebrow { color:#52729c; font-size:10px; letter-spacing:.16em; font-weight:800; }
+    .finder-heading p { margin:0; font-size:14px; color:var(--muted); }
+    .finder-entry { gap:9px; padding:18px; border:1px solid #e3eaf4; border-radius:18px; background:#f8fafd; }
+    .finder-entry label { font-weight:700; font-size:13px; }
+    .finder-entry input { margin:0; padding:13px; font-size:16px; border-radius:11px; background:white; }
+    .finder-submit { display:flex; justify-content:space-between; align-items:center; min-height:48px; border-radius:11px; box-shadow:none; }
+    .finder-divider { display:flex; align-items:center; gap:12px; color:#8490a2; font-size:12px; }
+    .finder-divider::before,.finder-divider::after { content:''; flex:1; height:1px; background:#e6ebf2; }
+    .finder-photo { display:grid; gap:4px; }
+    .finder-camera { display:flex; align-items:center; gap:13px; width:100%; padding:17px 15px; border:1px solid #dce7f6; border-radius:16px; background:#edf4ff; color:#1c3158; box-shadow:none; }
+    .finder-camera strong,.finder-camera small { display:block; }
+    .finder-camera strong { font-size:16px; }
+    .finder-camera small { margin-top:3px; font-size:11px; font-weight:400; color:#61748f; }
+    .finder-camera > span:last-child { margin-left:auto; font-size:20px; }
+    .finder-camera-icon { display:grid; place-items:center; flex:0 0 44px; height:44px; border-radius:13px; background:white; }
+    .finder-camera svg { width:25px; height:25px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linejoin:round; }
+    .finder-gallery { min-height:44px; padding:10px; text-align:center; background:transparent; color:#365f94; font-size:13px; font-weight:600; box-shadow:none; text-decoration:underline; text-underline-offset:3px; }
+    .finder-status { margin:0; padding:12px; background:#f4f7fb; border-radius:10px; font-size:13px; color:#53657f; }
+    .finder-feedback { display:flex; align-items:flex-start; gap:12px; padding:12px; border:1px solid #dce7f6; border-radius:12px; }
+    .finder-feedback img { width:56px; height:64px; border-radius:7px; object-fit:cover; }
+    .finder-feedback > div { min-width:0; flex:1; }
+    .finder-feedback strong { font-size:13px; }
+    .finder-feedback p { margin:3px 0 8px; font-size:12px; color:var(--muted); }
+    .finder-feedback select { display:block; width:100%; min-height:44px; margin-top:5px; padding:7px; border:1px solid #d5dfed; border-radius:8px; background:white; font:inherit; color:inherit; }
+    .finder-search [hidden] { display:none; }
+    .finder-search button:disabled { opacity:.6; cursor:wait; }
+    .finder-hint { border:1px solid #e2e9f2; border-radius:15px; background:#fff; overflow:hidden; color:#61718a; }
+    .finder-hint summary { display:flex; align-items:center; gap:11px; min-height:76px; padding:15px 13px; cursor:pointer; list-style:none; }
+    .finder-hint summary::-webkit-details-marker { display:none; }
+    .finder-hint summary:focus-visible { outline:2px solid #4779c4; outline-offset:-3px; border-radius:14px; }
+    .finder-hint-icon { display:grid; place-items:center; flex:0 0 36px; height:40px; border-radius:10px; background:#f0f5fc; color:#5275a4; }
+    .finder-hint svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+    .finder-hint-heading { flex:1; min-width:0; }
+    .finder-hint-heading strong { display:block; color:#243d61; font-size:13px; line-height:1.4; font-weight:700; }
+    .finder-hint-heading small { display:block; margin-top:3px; font-size:11px; line-height:1.5; }
+    .finder-hint .finder-hint-chevron { flex:0 0 19px; width:19px; height:19px; color:#7890b0; transition:transform .18s; }
+    .finder-hint[open] .finder-hint-chevron { transform:rotate(180deg); }
+    .finder-hint-content { padding:0 16px 16px; font-size:13px; line-height:1.65; }
+    .finder-hint-content > p { margin:0; padding-top:14px; border-top:1px solid #edf1f6; }
+    .finder-hint-content ul { margin:9px 0 14px; padding-left:19px; }
+    .finder-hint-content li { padding:2px 0 2px 2px; }
+    .finder-hint-content li::marker { color:#7396c6; }
+    .finder-hint-tip { display:grid; gap:3px; padding:11px 12px; border-radius:10px; background:#f5f8fd; font-size:12px; }
+    .finder-hint-tip strong { color:#365f94; font-size:10px; letter-spacing:.06em; text-transform:uppercase; }
+    .finder-suggestions { margin-top:26px; display:grid; gap:12px; }
+    .finder-suggestions[hidden] { display:none; }
+    .finder-suggestions h2 { margin:0; font-size:18px; overflow-wrap:anywhere; }
+    .finder-suggestions .product-grid button { overflow-wrap:anywhere; }
+    .finder-help { display:flex; justify-content:space-between; background:transparent; color:#365f94; border-top:1px solid #e6ebf2; border-radius:0; font-size:13px; box-shadow:none; }
   </style>
 </head>
 <body data-screen="find">
   <div id="shell"><header><img src="logo.png" alt="Vacuum PRO"></header><div class="stage"><aside class="story" aria-label="Vacuum PRO parts"><div class="story-content"><div class="eyebrow">VACUUM PRO / PARTS &amp; ACCESSORIES</div><h2>The right part starts here.</h2><p>Find replacement bags, filters and more by model, part number or a photo of the label.</p><div class="tags"><span>Vacuum bags</span><span>Filters</span><span>Belts &amp; accessories</span></div></div></aside><main id="view"></main></div><nav aria-label="Store navigation" id="nav"></nav></div>
   <script src="app.js"></script>
-  <script>
-    mountScreen(() => `
-      <section class="finder-search" aria-labelledby="finder-title">
-        <h1 id="finder-title" tabindex="-1">Find a part</h1>
-        <p>Search by model, brand or part number.</p>
-        <div class="finder-controls">
-          <div class="finder-entry">
-            <form id="search" role="search">
-              <input name="query" type="search" aria-label="Model, brand or part number"
-                value="${escapeHTML(query)}" placeholder="e.g. Oreck XL2100" enterkeyhint="search" required>
-              <button type="submit" class="finder-submit" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true">${tabIcons.find}</svg></button>
-            </form>
-            <div class="finder-examples">
-              <span class="quiet">Try</span>
-              <button type="button" data-query="Oreck XL2100">Oreck XL2100</button>
-              <button type="button" data-query="4010808S">#4010808S</button>
-            </div>
-          </div>
-          <button class="finder-scan" type="button" data-go="scan">
-            <span class="scan-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${tabIcons.scan}</svg></span>
-            <span><strong>Scan a model or part label</strong></span>
-            <span aria-hidden="true">›</span>
-          </button>
-        </div>
-      </section>
-      <section class="finder-suggestions">
-        <h2>Suggested parts</h2>
-        ${grid([0, 8, 9, 10, 11, 1])}
-        ${button('Browse all parts', 'browse', true)}
-      </section>
-      <details class="finder-hint">
-        <summary>Where do I find the model or part number?</summary>
-        <p>Check near the power cord, under the vacuum base, or on the old part.</p>
-      </details>
-    `);
-
-    view.addEventListener('click', event => {
-      const example = event.target.closest('button[data-query]');
-      if (!example) return;
-      const search = view.querySelector('#search');
-      search.elements.query.value = example.dataset.query;
-      search.requestSubmit();
-    });
-  </script>
+  <script src="finder.js"></script>
 </body>
 </html>

@@ -30,6 +30,23 @@ window.vacuumScreens = {
   },
   products,
   collection: null,
+  scanResult: null,
+  visualSearch() {
+    return new Promise((resolve, reject) => {
+      const key = ++requestId;
+      const timeout = setTimeout(() => { requests.delete(key); reject(new Error('Photo matching took too long. Try again.')); }, 50000);
+      requests.set(key, {resolve, reject, timeout});
+      send({type:'visual-search', key});
+    });
+  },
+  scan(source) {
+    return new Promise((resolve, reject) => {
+      const key = ++requestId;
+      const timeout = setTimeout(() => { requests.delete(key); reject(new Error('Photo selection timed out. Please try again.')); }, 180000);
+      requests.set(key, { resolve, reject, timeout });
+      send({ type:'scan', key, source });
+    });
+  },
   open(file) {
     if (!Object.hasOwn(pages, file)) return;
     route = file;
@@ -75,5 +92,6 @@ window.vacuumScreens = {
     yield items;
   },
   link(url) { send({ type: 'link', url }); },
+  share(title, url) { send({ type: 'share', title, url }); },
 };
 window.vacuumScreens.open(route);

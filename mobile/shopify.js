@@ -1,4 +1,4 @@
-const shopDomain = process.env.EXPO_PUBLIC_SHOPIFY_DOMAIN || 'vacuumprollc.myshopify.com';
+export const shopDomain = process.env.EXPO_PUBLIC_SHOPIFY_DOMAIN || 'vacuumprollc.myshopify.com';
 const productId = 'gid://shopify/Product/15517852401822';
 
 const finderFields = `
@@ -9,13 +9,25 @@ const finderFields = `
     reference { ... on Metaobject { modelNumber: field(key: "model_number") { value } } }
     references(first: 20) { nodes { ... on Metaobject { modelNumber: field(key: "model_number") { value } } } }
   }
+  detailFields: metafields(identifiers: [
+    { namespace: "custom", key: "product_specifications" },
+    { namespace: "custom", key: "package_includes" },
+    { namespace: "custom", key: "why_replace_this_part" },
+    { namespace: "custom", key: "pack" },
+    { namespace: "custom", key: "feature" },
+    { namespace: "custom", key: "compatible_brands" },
+    { namespace: "custom", key: "fits_series" },
+    { namespace: "custom", key: "oem_status" },
+    { namespace: "custom", key: "faq" }
+  ]) { key type value }
 `;
 const productFields = `
-  id title description vendor category { id name }
+  id title description vendor productType onlineStoreUrl category { id name }
   ${finderFields}
   featuredImage { url(transform: { maxWidth: 480 }) altText }
+  images(first: 6) { nodes { url(transform: { maxWidth: 960 }) altText } }
   availableForSale
-  variants(first: 1) { nodes { sku price { amount currencyCode } } }
+  variants(first: 1) { nodes { sku selectedOptions { name value } price { amount currencyCode } } }
 `;
 const pageFields = 'pageInfo { hasNextPage endCursor }';
 const queries = {

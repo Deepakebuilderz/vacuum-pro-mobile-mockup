@@ -89,7 +89,7 @@
       <div class="scan-content">
         <section class="scan-heading">
           ${title('Scan a label')}
-          <p>Use a clear photo of the model sticker or the part number.</p>
+          <p>Move close to the model sticker or printed part number. Keep other text outside the photo.</p>
         </section>
         <figure class="scan-example">
           <div class="scan-viewfinder">
@@ -100,15 +100,28 @@
           </div>
           <figcaption>Keep the full number in frame and avoid glare.</figcaption>
         </figure>
-        <label class="scan-picker">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-          Choose label photo
-          <input id="photo" type="file" accept="image/*" aria-label="Choose label photo">
-        </label>
+        <button class="scan-picker" type="button" id="scan-camera">Take a photo</button>
+        <button class="secondary" type="button" id="scan-gallery">Choose from gallery</button>
         <p id="scan-preview-note" class="quiet" aria-live="polite" hidden></p>
         <button class="scan-manual" type="button" data-go="find">Enter the number instead</button>
       </div>
     `);
+    for (const source of ['camera','gallery']) document.querySelector('#scan-'+source).onclick = async () => {
+      const note = document.querySelector('#scan-preview-note');
+      note.hidden = false;
+      if (typeof mobileScreens === 'undefined') { note.textContent = 'Photo scanning is available in the installed mobile app. You can enter the number manually here.'; return; }
+      const controls = [...document.querySelectorAll('#scan-camera,#scan-gallery')];
+      controls.forEach(button => button.disabled = true);
+      note.textContent = 'Choose a clear photo. Reading the label happens on your device…';
+      try {
+        const result = await mobileScreens.scan(source);
+        if (!result) { note.textContent = 'No photo selected.'; return; }
+        mobileScreens.scanResult = result;
+        render('confirm');
+      } catch (error) { note.textContent = error.message; }
+      finally { controls.forEach(button => button.disabled = false); }
+    };
+
   </script>
 </body>
 </html>

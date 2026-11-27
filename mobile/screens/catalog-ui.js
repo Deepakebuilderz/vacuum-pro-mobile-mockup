@@ -34,15 +34,45 @@ function finderMatch(product, input) {
   const keywords = [product.title, product.vendor, product.category?.name, ...identifiers, ...tags].join(' ').toLowerCase();
   return term.split(/\s+/).every(word => keywords.includes(word)) ? 'Catalog match' : '';
 }
+function metafieldText(field) {
+  if (!field?.value) return '';
+  if (field.type !== 'rich_text_field') return field.value.trim();
+  try {
+    const text = node => node.type === 'text' ? node.value :
+      (node.children || []).map(text).join('') + (['paragraph', 'list-item', 'heading'].includes(node.type) ? '\n\n' : '');
+    return text(JSON.parse(field.value)).trim();
+  } catch { return ''; }
+}
 function syncParts(items) {
   for (const product of items) {
     const variant = product.variants.nodes[0];
+    const details = Object.fromEntries((product.detailFields || []).filter(Boolean).map(field => {
+      const value = metafieldText(field);
+      return [field.key, escapeHTML(field.key === 'pack' ? value.replace(/^'/, '').trim() : value)];
+    }));
+    const packOption = variant?.selectedOptions?.find(option => /pack/i.test(option.name));
+    const selectedPack = packOption?.value.match(/^(?:pack of\s*)?(\d+)$/i)?.[1];
+    if (selectedPack) details.pack = selectedPack;
+    if (!details.why_replace_this_part) {
+      const reason = (product.description || '').match(/(?:^|[.!?]\s+)((?:Routine replacement|Replacing\b|Designed to provide)[^.!?]+[.!?]?)/i)?.[1];
+      if (reason) details.why_replace_this_part = escapeHTML(reason);
+    }
+    if (!details.package_includes && /^\d+$/.test(details.pack || '') && product.productType) {
+      details.package_includes = details.pack + ' × ' + escapeHTML([product.vendor, product.productType].filter(Boolean).join(' '));
+    }
+    const images = (product.images?.nodes || []).filter(image => /^https:\/\//i.test(image.url));
     const part = {
       id: product.id, name: escapeHTML(product.title), brand: escapeHTML(product.vendor),
       category: escapeHTML(product.category?.name || 'Uncategorized'),
       sku: escapeHTML(variant?.sku || '—'), pack: '',
-      img: /^https:\/\//i.test(product.featuredImage?.url || '') ? escapeHTML(product.featuredImage.url) : '',
+      mpn: escapeHTML(product.mpn?.value || ''),
+      description: escapeHTML(product.description || ''),
+      models: modelEntries(product.compatibleModels).map(escapeHTML),
+      type: escapeHTML(product.productType || ''), details, images,
+      url: /^https:\/\//i.test(product.onlineStoreUrl || '') ? product.onlineStoreUrl : '',
+      img: /^https:\/\//i.test(product.featuredImage?.url || '') ? escapeHTML(product.featuredImage.url) : images[0] ? escapeHTML(images[0].url) : '',
       price: Number(variant?.price.amount || 0), available: product.availableForSale,
+      currencyCode: variant?.price.currencyCode || 'USD',
       displayPrice: variant ? new Intl.NumberFormat(undefined, {
         style: 'currency', currency: variant.price.currencyCode,
       }).format(Number(variant.price.amount)) : '',
@@ -84,9 +114,9 @@ mountScreen = function mountMobileScreen(content) {
   }
   if (page === 'product' && catalog[current]?.id) {
     const part = catalog[current];
-    document.querySelector('#purchase-dock strong').textContent = part.displayPrice;
+    updateProductTotal();
     const product = mobileScreens.products.get(part.id);
-    if (product && productSource === 'results') {
+    if (product && ['results', 'find'].includes(productSource)) {
       const match = finderMatch(product, query);
       if (match === 'Model match') view.querySelector('.pdp-fit h2').textContent = 'Fits ' + query.toUpperCase();
       if (match.startsWith('Series match')) view.querySelector('.pdp-fit p').textContent = 'Series match only. Confirm the full model number before ordering.';
@@ -111,12 +141,26 @@ function startCatalog() {
   const slot = view.querySelector('#mobile-products');
   const collection = view.querySelector('#collection');
   const category = view.querySelector('#category');
+  const stage = view.closest('.stage');
+  const refreshStatus = document.createElement('div');
+  refreshStatus.className = 'catalog-refresh';
+  refreshStatus.setAttribute('role', 'status');
+  refreshStatus.setAttribute('aria-live', 'polite');
+  stage.before(refreshStatus);
   let list = [];
   let limit = 36;
   let generation = 0;
   let categoryId = mobileScreens.category || '';
+  let finderSearching = false;
   function draw(loading, error) {
     let rows = list;
+    if (page === 'find') {
+      view.querySelector('#finder-results').hidden = !finderSearching;
+      if (!finderSearching) { slot.innerHTML = ''; return; }
+    }
+    const searching = page === 'results' || finderSearching;
+    const finderTitle = view.querySelector('#finder-results-title');
+    if (finderTitle) finderTitle.textContent = 'Searching products…';
     if (category) {
       const groups = new Map([['', 'All categories']]);
       for (const p of rows) groups.set(p.category?.id || 'none', p.category?.name || 'Uncategorized');
@@ -124,15 +168,17 @@ function startCatalog() {
       category.value = categoryId;
       if (categoryId) rows = rows.filter(p => (p.category?.id || 'none') === categoryId);
     }
-    if (page === 'results') {
+    if (searching) {
       const priority = ['Part number match', 'Model match', 'Series match - check fit', 'Catalog match'];
       const groups = new Map(priority.map(label => [label, []]));
       for (const product of rows) groups.get(finderMatch(product, query))?.push(product);
       rows = priority.flatMap(label => groups.get(label));
     }
-    const max = page === 'home' || page === 'find' ? 6 : limit;
+    const max = page === 'home' || (page === 'find' && !searching) ? 6 : limit;
     const shown = rows.slice(0, max);
+    if (finderTitle) finderTitle.textContent = error && !rows.length ? 'Could not check products' : loading && !rows.length ? 'Searching products…' : rows.length ? 'Product found' : 'Product not found';
     let html = '';
+    if (page === 'find' && query) html += '<p class="quiet">Results for <strong>' + escapeHTML(query) + '</strong></p>';
     if (page === 'browse') {
       const sections = new Map();
       for (const p of shown) {
@@ -143,11 +189,18 @@ function startCatalog() {
       for (const products of sections.values()) html += '<section class="home-shop"><h2>' +
         escapeHTML(products[0].category?.name || 'Uncategorized') + '</h2>' + liveGrid(products) + '</section>';
     } else if (shown.length) {
-      html += liveGrid(shown, page === 'results' ? query : '');
+      html += liveGrid(shown, searching ? query : '');
     }
     if (!rows.length && !loading && !error) html += '<p class="quiet">' +
-      (page === 'results' ? 'No matching parts.' : 'No products available here.') + '</p>';
-    if (loading) html += '<p class="quiet" role="status">Loading products…</p>';
+      (searching ? 'No matching parts in our current catalog. Check the number or contact us for fitment help.' : 'No products available here.') + '</p>';
+    if (page === 'find' && !loading && !error) {
+      const matches = new Set(rows.map(product => product.id));
+      const available = list.filter(product => !matches.has(product.id) && /vacuum|filter|belt|bag|brush|harness/i.test(product.title));
+      const related = available.filter(product => rows.some(match => (match.vendor && product.vendor === match.vendor) || (match.productType && product.productType === match.productType)));
+      const suggestions = [...related, ...available.filter(product => !related.includes(product))].slice(0,4);
+      if (suggestions.length) html += '<h3>Suggested parts</h3><p class="quiet">Other parts to explore. Confirm your model before ordering.</p>' + liveGrid(suggestions);
+    }
+    if (loading && !rows.length) html += '<p class="quiet" role="status">Loading products…</p>';
     if (error) html += '<p class="quiet" role="alert">' + escapeHTML(error) + '</p>';
     if (rows.length > max && max === limit) html += '<button class="secondary" data-more>Show more products</button>';
     if (error || (['browse', 'results'].includes(page) && !loading)) html += '<button class="secondary" data-refresh>' +
@@ -160,17 +213,18 @@ function startCatalog() {
   }
   let pending = false;
   let failure = '';
-  async function load() {
+  async function load(refresh = false) {
     const serial = ++generation;
-    list = []; pending = true; failure = ''; limit = 36;
-    draw(true);
+    if (!refresh) list = [];
+    pending = true; failure = ''; limit = 36;
+    if (!refresh || !list.length) draw(true);
     const id = collection && mobileScreens.collection;
     try {
       for await (const rows of mobileScreens.catalog(id ? 'collectionProducts' : 'products', id)) {
         if (serial !== generation || !slot.isConnected || parent.document.querySelector('iframe').contentDocument !== document) return;
         list = rows;
         syncParts(mobileScreens.products.values());
-        draw(true);
+        if (!refresh) draw(true);
       }
     } catch (err) {
       if (serial === generation) failure = err.message;
@@ -198,10 +252,80 @@ function startCatalog() {
     category.onchange = () => { categoryId = mobileScreens.category = category.value; limit = 36; draw(pending, failure); };
     loadCollections();
   }
+  function positionRefresh(distance, dragging = false) {
+    stage.classList.toggle('catalog-pulling', dragging);
+    view.style.setProperty('--refresh-offset', distance + 'px');
+    refreshStatus.style.setProperty('--pull', distance + 'px');
+    refreshStatus.style.setProperty('--turn', Math.min(distance / 45, 1) * 180 + 'deg');
+  }
+  async function refresh() {
+    if (pending || refreshStatus.classList.contains('refreshing')) return;
+    const started = Date.now();
+    positionRefresh(54);
+    refreshStatus.textContent = 'Refreshing products…';
+    refreshStatus.classList.add('visible');
+    refreshStatus.classList.add('refreshing');
+    mobileScreens.invalidate();
+    try {
+      await Promise.all([load(true), collection ? loadCollections() : Promise.resolve()]);
+    } finally {
+      // Let fast responses finish the spinner's entrance instead of flashing it.
+      await new Promise(resolve => setTimeout(resolve, Math.max(0, 400 - (Date.now() - started))));
+      refreshStatus.classList.remove('refreshing');
+      refreshStatus.classList.remove('visible');
+      refreshStatus.textContent = failure ? 'Refresh failed. Try again.' : 'Products updated.';
+      positionRefresh(0);
+    }
+  }
+  let pullStart = null;
+  let pullDistance = 0;
+  function resetPull() {
+    pullStart = null;
+    pullDistance = 0;
+    if (!refreshStatus.classList.contains('refreshing')) {
+      refreshStatus.classList.remove('visible');
+      positionRefresh(0);
+    }
+  }
+  stage.addEventListener('touchstart', event => {
+    resetPull();
+    if (pending || refreshStatus.classList.contains('refreshing') || stage.scrollTop > 0 || event.touches.length !== 1 ||
+        event.target.closest('input, select, textarea')) return;
+    pullStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }, { passive: true });
+  stage.addEventListener('touchmove', event => {
+    if (!pullStart) return;
+    if (event.touches.length !== 1 || stage.scrollTop > 0) return resetPull();
+    const dx = event.touches[0].clientX - pullStart.x;
+    const dy = event.touches[0].clientY - pullStart.y;
+    if (dy <= 0 || Math.abs(dx) > dy) return resetPull();
+    event.preventDefault();
+    pullDistance = dy;
+    if (dy < 8) return;
+    positionRefresh(Math.min(76, dy * .45), true);
+    refreshStatus.classList.add('visible');
+    refreshStatus.textContent = dy >= 100 ? 'Release to refresh' : 'Pull down to refresh';
+  }, { passive: false });
+  stage.addEventListener('touchend', event => {
+    const ready = pullStart && pullDistance >= 100;
+    if (pullDistance > 0) event.preventDefault();
+    if (ready) {
+      pullStart = null;
+      pullDistance = 0;
+      refresh();
+    } else resetPull();
+  }, { passive: false });
+  stage.addEventListener('touchcancel', resetPull, { passive: true });
   slot.onclick = event => {
     if (event.target.closest('[data-more]')) { limit += 36; draw(pending, failure); }
-    if (event.target.closest('[data-refresh]')) { mobileScreens.invalidate(); if (collection) loadCollections(); load(); }
+    if (event.target.closest('[data-refresh]')) refresh();
   };
+  if (page === 'find') view.addEventListener('finder-search', () => {
+    finderSearching = true;
+    limit = 36;
+    draw(pending, failure);
+  });
+  if (page === 'find') view.addEventListener('finder-reset', () => { finderSearching = false; draw(pending, failure); });
   load();
 }
 

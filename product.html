@@ -35,32 +35,68 @@
   <script>
     mountScreen(() => {
       const part = catalog[current];
-      const modelMatch = current === 0 && verified && productSource === 'results';
+      const modelMatch = !part.id && current === 0 && verified && productSource === 'results';
       const category = partCategory(part);
+      const models = part.models || [];
+      const details = part.details || {};
+      const photos = part.images || [];
+      const soldOut = part.available === false;
+      const accordion = (label, content, open = false) => '<details class="pdp-accordion"' + (open ? ' open' : '') + '><summary>' + label + '</summary><div class="pdp-accordion-body">' + content + '</div></details>';
+      const textBlock = value => '<p class="pdp-long-text">' + value + '</p>';
+      const modelList = values => '<ul class="pdp-model-list">' + values.map(model => '<li>' + model + '</li>').join('') + '</ul>';
+      const specifications = [
+        ['Brand', part.brand], ['Product type', part.type], ['Category', category],
+        ['Part number (MPN)', part.mpn || part.sku], ['SKU', part.sku],
+        ['Compatible brand', details.compatible_brands], ['Material / feature', details.feature],
+        ['Vacuum series', details.fits_series], ['OEM status', details.oem_status], ['Pack quantity', details.pack]
+      ].filter(([, value]) => value && value !== '—');
       const alternatives = catalog.map((_, index) => index).filter(index => index !== current && (!part.id || catalog[index].id));
       const sameCategory = alternatives.filter(index => partCategory(catalog[index]) === category);
       const sameBrand = alternatives.filter(index => catalog[index].brand === part.brand);
-      const related = [...new Set([...sameCategory, ...sameBrand, ...alternatives])].slice(0, 2);
+      const related = [...new Set([...sameCategory, ...sameBrand, ...alternatives])].slice(0, 4);
+      const recommendation = index => {
+        const item = catalog[index];
+        return '<article class="pdp-recommendation"><button type="button" class="pdp-card-open" data-go="item-' + index + '">' +
+          (item.img ? '<img src="' + item.img + '" alt="" loading="lazy">' : '') + '<strong>' + item.name + '</strong><span>' + escapeHTML(item.displayPrice || money(item.price)) + '</span></button>' +
+          '<div class="pdp-card-actions"><button type="button" class="pdp-related-save" data-go="wishlist-' + index + '" aria-label="Save to wishlist" aria-pressed="' + wishlist.includes(item.id || item.sku) + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + tabIcons.wishlist + '</svg></button>' +
+          '<button type="button" data-go="add-item-' + index + '"' + (item.available === false ? ' disabled' : '') + '>' + (item.available === false ? 'Sold out' : 'Add to cart') + '</button></div></article>';
+      };
       return `
         <div class="pdp-photo"><img src="${part.img}" alt="${part.categoryPhoto ? category + ' category illustration' : part.name}">
           <button class="pdp-save" type="button" data-go="toggle-wishlist" aria-label="Save to wishlist" aria-pressed="${wishlist.includes(part.id || part.sku)}">
             <svg viewBox="0 0 24 24" aria-hidden="true">${tabIcons.wishlist}</svg>
           </button>
         </div>
+        ${photos.length > 1 ? '<div class="pdp-thumbnails" aria-label="Product images">' + photos.map((image, index) => '<button type="button" data-go="photo-' + index + '" aria-label="View image ' + (index + 1) + '" aria-pressed="' + (index === 0) + '"><img src="' + escapeHTML(image.url) + '" alt="" loading="lazy"></button>').join('') + '</div>' : ''}
         <section class="pdp-details">
-          <p class="pdp-part">${part.brand} · Part #${part.sku}</p>
+          <div class="pdp-heading-row"><p class="pdp-part">${part.brand} · Part #${part.mpn || part.sku}</p><button type="button" class="pdp-share" data-go="share-product" aria-label="Share product"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 12v8h14v-8"/></svg></button></div>
           ${title(part.name)}
-          <p class="pdp-spec">${part.pack}${part.categoryPhoto ? ' · Category image' : ''}</p>
+          ${part.pack || part.categoryPhoto ? '<p class="pdp-spec">' + part.pack + (part.categoryPhoto ? ' · Category image' : '') + '</p>' : ''}
+          <div class="pdp-price-row"><strong data-pdp-total aria-live="polite">${escapeHTML(part.displayPrice || money(part.price))}</strong>${typeof part.available === 'boolean' ? '<span class="pdp-stock' + (part.available ? '' : ' unavailable') + '">' + (part.available ? 'Available to order' : 'Sold out') + '</span>' : ''}</div>
+          <p id="pdp-unit-note" hidden></p>
         </section>
+        <section class="pdp-purchase" aria-label="Purchase options">
+          <label class="pdp-quantity-label" for="pdp-quantity">Quantity</label>
+          <div class="pdp-buy-row"><div class="pdp-quantity" role="group" aria-label="Quantity"><button type="button" data-go="quantity-minus" aria-label="Decrease quantity">−</button><input id="pdp-quantity" aria-label="Quantity" type="number" inputmode="numeric" min="1" max="99" step="1" value="1" required${soldOut ? ' disabled' : ''}><button type="button" data-go="quantity-plus" aria-label="Increase quantity">+</button></div><button type="button" data-go="buy-now"${soldOut ? ' disabled' : ''}>Buy now</button></div>
+          ${part.url ? '<a class="pdp-payment-options" href="' + escapeHTML(part.url) + '">View payment options on store</a>' : ''}
+        </section>
+        <div class="pdp-services"><a href="https://www.vacuumpro.com/pages/shipping-policy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h11v12H3zM14 9h4l3 4v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Fast U.S. shipping<small>Dispatch in 1 business day</small></span></a><a href="https://www.vacuumpro.com/pages/returns-refunds"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 4-5 5 5 5M3 9h11a6 6 0 0 1 0 12h-3"/></svg><span>30-day returns<small>View return policy</small></span></a></div>
         <section class="pdp-fit">
           <h2>${modelMatch ? 'Matches your model search' : 'Check compatibility'}</h2>
-          <p>${modelMatch ? 'Compare your full model number with the listing before ordering.' : 'Have your vacuum model number handy before ordering.'}</p>
-          ${button(current === 0 ? 'Check Oreck model' : 'Get fitment help', current === 0 ? 'confirm' : 'support', true)}
+          <p>${modelMatch || models.length ? 'Match your full model number with the compatible models below before ordering.' : part.id ? 'Compatible models are not listed for this part. Confirm your exact model with support before ordering.' : 'Have your vacuum model number handy before ordering.'}</p>
+          ${button(!part.id && current === 0 ? 'Check Oreck model' : 'Get fitment help', !part.id && current === 0 ? 'confirm' : 'support', true)}
         </section>
-        <section class="pdp-related" aria-labelledby="related-parts-title">
-          <h2 id="related-parts-title">Related products</h2>
-          <p class="quiet">Check model compatibility before ordering.</p>
-          ${grid(related)}
+        <section class="pdp-accordions" aria-label="Product information">
+          ${accordion('About the Product', textBlock(part.description || part.pack || 'Contact our parts team for more information.'), true)}
+          ${accordion('Product Specifications', '<div class="pdp-specifications"><dl>' + specifications.map(([label, value]) => '<div><dt>' + label + '</dt><dd>' + value + '</dd></div>').join('') + '</dl></div>' + (details.product_specifications ? textBlock(details.product_specifications) : '') + (models.length ? '<h3>Compatible models (' + models.length + ')</h3>' + modelList(models) : ''))}
+          ${accordion('Package Includes', textBlock(details.package_includes || 'For exact package contents, ask our parts team before ordering.') + (!details.package_includes ? button('Ask about this part', 'support', true) : ''))}
+          ${accordion('Why Replace This Part', textBlock(details.why_replace_this_part || 'Our parts team can help you confirm whether this replacement is suitable for your repair.') + (!details.why_replace_this_part ? button('Get replacement advice', 'support', true) : ''))}
+          ${accordion('FAQs', textBlock(details.faq || 'Need help checking fit or choosing the right part? Contact our parts team with your full vacuum model number.') + button('Ask a product question', 'support', true))}
+        </section>
+        ${related.length ? '<section class="pdp-related" aria-labelledby="related-parts-title"><h2 id="related-parts-title">You may also like</h2>' +
+          '<p class="quiet">Check model compatibility before ordering.</p><div class="pdp-related-grid">' + related.map(recommendation).join('') + '</div></section>' : ''}
+        <section class="pdp-reviews"><h2>Reviews &amp; questions</h2>
+          ${part.url ? '<p>Read customer reviews or ask a product question on the store.</p><a class="pdp-reviews-link" href="' + escapeHTML(part.url) + '#judgeme_product_reviews">View customer reviews</a>' : '<p>Have a question about this part? Our parts team can help.</p>' + button('Ask a question', 'support', true)}
         </section>
       `;
     });

@@ -32,7 +32,7 @@ let current=0, orderLines=[];
 const quantities=catalog.map(()=>0);
 let resultIndexes=[], contact={}, delivery='shipping';
 const total=()=>catalog.reduce((sum,p,i)=>sum+p.price*quantities[i],0);
-const grid=(items=catalog.map((_,i)=>i))=>'<div class="product-grid">'+items.map(i=>catalog[i]).map(p=>'<button type="button" data-go="item-'+catalog.indexOf(p)+'"><img src="'+p.img+'" alt="" loading="lazy"><small>'+p.brand+' · #'+p.sku+(p.categoryPhoto?' · Category image':'')+'</small><strong>'+p.name+'</strong><span>'+money(p.price)+'</span></button>').join('')+'</div>';
+const grid=(items=catalog.map((_,i)=>i))=>'<div class="product-grid">'+items.map(i=>catalog[i]).map(p=>'<button type="button" data-go="item-'+catalog.indexOf(p)+'"><img src="'+p.img+'" alt="" loading="lazy"><small>'+p.brand+' · #'+p.sku+(p.categoryPhoto?' · Category image':'')+'</small><strong>'+p.name+'</strong><span>'+escapeHTML(p.displayPrice || money(p.price))+'</span></button>').join('')+'</div>';
 const orderNames=(lines=orderLines)=>lines.map(([n,q])=>n+' × '+q).join('<br>');
 
 let signed=false,qty=0,order=false,query='',verified=false,preview='';
@@ -40,17 +40,18 @@ const button=(label,go,secondary=false)=>'<button type="button" data-go="'+go+'"
 const actions=(...items)=>'<div class="actions">'+items.map(([label,go],i)=>button(label,go,i>0)).join('')+'</div>';
 const field=(label,type='text',placeholder='')=>'<label>'+label+'<input name="'+label.toLowerCase().replace(' ','-')+'" type="'+type+'" placeholder="'+placeholder+'" required></label>';
 const card=(title,detail,cls='')=>'<div class="card '+cls+'"><div class="label">'+title+'</div><p>'+detail+'</p></div>';
-const money=n=>'$'+n.toFixed(2);
+const money=(n,currency='USD')=>new Intl.NumberFormat(undefined,{style:'currency',currency}).format(n);
+const cartCurrency=()=>catalog.find((part,index)=>quantities[index]&&part.currencyCode)?.currencyCode||'USD';
 const title=s=>'<h1 tabindex="-1">'+s+'</h1>';
 const form=(id,fields,label)=>'<form id="'+id+'">'+fields+'<div class="actions"><button>'+label+'</button></div></form>';
 const productCard=(p=catalog[0])=>card(p.brand+' · #'+p.sku,p.pack+'<br><strong>'+money(p.price)+'</strong>');
 const matches=s=>/^(430001047|(?:oreck\s+)?xl\s*-?\s*2100|oreck\s+xl2100\s+vacuum\s+bag)$/i.test(s.trim());
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
-const summary=(full=false)=>'<section class="checkout-box"><h2>Order summary</h2><div><span>Subtotal</span><span>'+money(total())+'</span></div>'+(full?'<div><span>Delivery</span><span>'+(delivery==='pickup'?'Local pickup':'Standard shipping')+'</span></div><div><span>Shipping and tax</span><span>Calculated by Shopify</span></div>':'')+'</section>';
+const summary=(full=false)=>'<section class="checkout-box"><h2>Order summary</h2><div><span>Subtotal</span><span>'+money(total(),cartCurrency())+'</span></div>'+(full?'<div><span>Delivery</span><span>'+(delivery==='pickup'?'Local pickup':'Standard shipping')+'</span></div><div><span>Shipping and tax</span><span>Calculated by Shopify</span></div>':'')+'</section>';
 const step=(active,label,detail)=>'<div class="progress" aria-label="Checkout progress">'+['Information','Delivery','Payment'].map((name,i)=>i===active?'<strong aria-current="step">'+(i+1)+' '+name+'</strong>':'<span>'+(i+1)+' '+name+'</span>').join('')+'</div>'+title(label)+'<p class="quiet">'+detail+'</p>';
 const input=(label,name,type='text',attributes='')=>'<label>'+label+'<input name="'+name+'" type="'+type+'" value="'+escapeHTML(contact[name])+'" '+attributes+' required></label>';
 const option=(name,value,label,checked)=>'<label class="option"><input type="radio" name="'+name+'" value="'+value+'"'+(checked?' checked':'')+'>'+label+'</label>';
-const cartLines=()=>catalog.map((p,i)=>quantities[i]?'<article class="cart-line"><img src="'+p.img+'" alt=""><div><strong>'+p.name+'</strong><p class="quiet">Part #'+p.sku+' · '+money(p.price*quantities[i])+'</p><div class="stepper"><button type="button" class="secondary" data-go="remove-'+i+'" aria-label="Decrease '+p.name+' quantity">−</button><span>'+quantities[i]+'</span><button type="button" class="secondary" data-go="increase-'+i+'" aria-label="Increase '+p.name+' quantity">+</button></div></div></article>':'').join('');
+const cartLines=()=>catalog.map((p,i)=>quantities[i]?'<article class="cart-line"><img src="'+p.img+'" alt=""><div><strong>'+p.name+'</strong><p class="quiet">Part #'+p.sku+' · '+money(p.price*quantities[i],p.currencyCode)+'</p><div class="stepper"><button type="button" class="secondary" data-go="remove-'+i+'" aria-label="Decrease '+p.name+' quantity">−</button><span>'+quantities[i]+'</span><button type="button" class="secondary" data-go="increase-'+i+'" aria-label="Increase '+p.name+' quantity">+</button></div></div></article>':'').join('');
 const tabIcons={
  wishlist:'<path d="M20.8 8.5c0 4.7-8.8 9.5-8.8 9.5S3.2 13.2 3.2 8.5a4.5 4.5 0 0 1 8.8-1.4 4.5 4.5 0 0 1 8.8 1.4z"/>',
  home:'<path d="m3 10 9-7 9 7v10h-6v-6H9v6H3z"/>',
@@ -83,8 +84,8 @@ const routes = {
   "browse": "browse.html",
   "find": "find-a-part.html",
   "results": "search-results.html",
-  "scan": "scan-label.html",
-  "confirm": "confirm-model.html",
+  "scan": "find-a-part.html",
+  "confirm": "find-a-part.html",
   "unknown": "fit-not-confirmed.html",
   "product": "product.html",
   "cart": "cart.html",
@@ -192,6 +193,20 @@ window.addEventListener('pageshow', event => {
   if (event.persisted) reloadScreen();
 });
 
+function updateProductTotal() {
+ const input=view.querySelector('#pdp-quantity');
+ if(!input||!input.checkValidity())return;
+ const count=Number(input.value), part=catalog[current];
+ const totalPrice=money(part.price*count,part.currencyCode);
+ document.querySelectorAll('[data-pdp-total], #purchase-dock strong').forEach(label=>{label.textContent=totalPrice;});
+ const label=document.querySelector('#purchase-dock small');
+ if(label)label.textContent=count===1?'Total price':count+' items · Total';
+ const note=view.querySelector('#pdp-unit-note');
+ if(note){note.hidden=count===1;note.textContent=money(part.price,part.currencyCode)+' each × '+count;}
+}
+
+view.addEventListener('input',event=>{if(event.target.id==='pdp-quantity')updateProductTotal();});
+
 function paint(page, screen){
 
  const stage=document.querySelector('.stage'); stage.dataset.page=page; stage.scrollTop=0;
@@ -215,13 +230,15 @@ function paint(page, screen){
  const header = document.querySelector('#shell header');
  header.classList.toggle('has-back', Boolean(back));
  header.querySelector('.app-back')?.remove();
+ if (!header.querySelector('.app-settings')) header.insertAdjacentHTML('beforeend', '<button type="button" class="app-settings" data-go="account" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-.6 2.4-2 .9L4 5.6l-2 3.5 1.8 1.7v2.4L2 14.9l2 3.5 2.4-.7 2 .9L9 21h4l.6-2.4 2-.9 2.4.7 2-3.5-1.8-1.7v-2.4L20 9.1l-2-3.5-2.4.7-2-.9L13 3z"/><circle cx="11" cy="12" r="3"/></svg></button>');
  if (back) header.insertAdjacentHTML('afterbegin', '<button type="button" class="app-back" data-go="'+back+'" aria-label="Back"><span aria-hidden="true">‹</span></button>');
  let dock = document.querySelector('#purchase-dock');
  if (!dock && page === 'product') {
    nav.insertAdjacentHTML('beforebegin', '<section id="purchase-dock" aria-label="Purchase"></section>');
    dock = document.querySelector('#purchase-dock');
  }
- if (dock) dock.innerHTML = '<div><small>Price</small><strong>'+money(catalog[current].price)+'</strong></div>'+button('Add to cart','add');
+ if (dock) dock.innerHTML = '<div class="purchase-total"><small>Total price</small><strong>'+money(catalog[current].price,catalog[current].currencyCode)+'</strong></div><button type="button" class="purchase-add" data-go="add"><svg viewBox="0 0 24 24" aria-hidden="true">'+tabIcons.cart+'</svg><span>Add to cart</span></button>';
+ if(page==='product')updateProductTotal();
  nav.hidden=['welcome','login','signup','reset','inbox','checkout','delivery','payment','failure','thanks'].includes(page);
  nav.style.display=nav.hidden?'none':'flex';
  renderTabs(page);
@@ -229,18 +246,49 @@ function paint(page, screen){
 }
 document.addEventListener('click',e=>{
  const go=e.target.closest('button[data-go]')?.dataset.go;if(!go)return; if(go==='sample-number'){const field=view.querySelector('input[name=query]');field.value='430001047';field.focus();return}
+ if(go==='quantity-minus'||go==='quantity-plus'){
+  const input=view.querySelector('#pdp-quantity');
+  input.value=String(Math.max(1,Math.min(99,(Number(input.value)||1)+(go==='quantity-plus'?1:-1))));
+  updateProductTotal();
+  return;
+ }
+ if(go.startsWith('photo-')){
+  const index=Number(go.slice(6)), image=catalog[current].images?.[index];
+  if(!image)return;
+  const photo=view.querySelector('.pdp-photo > img');photo.src=image.url;photo.alt=image.altText||catalog[current].name;
+  view.querySelectorAll('[data-go^="photo-"]').forEach(control=>control.setAttribute('aria-pressed',String(control.dataset.go===go)));
+  return;
+ }
+ if(go==='share-product'){
+  const part=catalog[current], name=view.querySelector('h1').textContent;
+  if(typeof mobileScreens!=='undefined')mobileScreens.share(name,part.url||'');
+  else if(navigator.share)navigator.share({title:name,...(part.url?{url:part.url}:{text:name})}).catch(()=>{});
+  return;
+ }
+ if(/^add-item-[0-9]+$/.test(go)){
+  const index=Number(go.slice(9));if(!catalog[index]||catalog[index].available===false)return;
+  qty++;quantities[index]++;return render('cart');
+ }
  if(go.startsWith('item-')){current=Number(go.slice(5));if(page!=='product')productSource=page;return render('product')}
- if(go==='toggle-wishlist'){
-  const sku=catalog[current].id || catalog[current].sku;
+ if(go==='toggle-wishlist'||/^wishlist-[0-9]+$/.test(go)){
+  const part=catalog[go==='toggle-wishlist'?current:Number(go.slice(9))];if(!part)return;
+  const sku=part.id || part.sku;
   const control=e.target.closest('button[data-go]');
   const saved=!wishlist.includes(sku);
   wishlist=saved?[...wishlist,sku]:wishlist.filter(item=>item!==sku);
   saveState();
   control.setAttribute('aria-pressed', String(saved));
+  control.setAttribute('aria-label',saved?'Remove from wishlist':'Save to wishlist');
   renderTabs(page);
   return;
  }
- if(go==='add'){qty++;quantities[current]++;return render('cart')}
+ if(go==='add'||go==='buy-now'){
+  if(catalog[current].available===false)return;
+  const input=view.querySelector('#pdp-quantity');
+  if(input&&!input.checkValidity()){input.reportValidity();return;}
+  const amount=input?Number(input.value):1;
+  qty+=amount;quantities[current]+=amount;return render(go==='buy-now'?'checkout':'cart');
+ }
  if(/^(increase|remove)-[0-9]+$/.test(go)){
   const i=Number(go.split('-')[1]), delta=go.startsWith('increase')?1:-1;
   if(quantities[i]+delta>=0){quantities[i]+=delta;qty+=delta}
@@ -295,11 +343,12 @@ view.addEventListener('submit',e=>{
   return render('results');
  }
  if(id==='model'){
-  const model=String(data.get('model'));
+  const model=String(data.get('model')||'').trim();
+  if(!model)return;
   query=model;
   verified=matches(model)&&/xl/i.test(model);
   resultIndexes=verified?[0]:[];
-  return render(verified?'results':'unknown');
+  return render(typeof mobileScreens!=='undefined'?'results':verified?'results':'unknown');
  }
  if(id==='information'){contact=Object.fromEntries(data);checkoutReady=true;checkoutMethodChosen=false;return render('delivery')}
  if(id==='delivery'){delivery=String(data.get('method'));checkoutMethodChosen=true;return render('payment')}

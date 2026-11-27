@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, Linking, Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Linking, Pressable, Share, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from '@expo/dom-webview';
 import * as Files from 'expo-file-system/legacy';
 import screens from './generated/screens.json';
-import { fetchCatalogPage } from './shopify';
+import { fetchCatalogPage, shopDomain } from './shopify';
+import * as ImagePicker from 'expo-image-picker';
+import { requireNativeModule } from 'expo';
+import { scanIdentifiers } from './scan-identifiers';
 
 async function installScreens() {
   const dir = Files.cacheDirectory + 'vacuum-screens-' + screens.version + '/';
@@ -24,6 +27,8 @@ async function installScreens() {
 export default function App() {
   const web = useRef(null);
   const atWelcome = useRef(true);
+  const scanning = useRef(false);
+  const scanPhoto = useRef(null);
   const [source, setSource] = useState(null);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -46,8 +51,63 @@ export default function App() {
     let msg;
     try { msg = JSON.parse(event.nativeEvent.data); } catch { return; }
     if (msg.type === 'screen') { atWelcome.current = msg.root; return; }
+    if (msg.type === 'scan' && Number.isSafeInteger(msg.key) && ['camera','gallery'].includes(msg.source)) {
+      if (scanning.current) return;
+      scanning.current = true;
+      let result = null, failure = null;
+      try {
+        if (msg.source === 'camera') {
+          const permission = await ImagePicker.requestCameraPermissionsAsync();
+          if (!permission.granted) throw new Error('Camera access is off. Allow it in phone settings or choose a photo.');
+        }
+        const photo = await (msg.source === 'camera' ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync)({mediaTypes:['images'], quality:0.8, base64:true, exif:false});
+        if (!photo.canceled) {
+          const image = photo.assets[0];
+          scanPhoto.current = image;
+          const text = await requireNativeModule('VacuumOcr').recognize(image.uri);
+          result = { text, candidates:scanIdentifiers(text), visualAvailable:/^https:\/\//.test(process.env.EXPO_PUBLIC_VISUAL_SEARCH_URL || ''), preview:'data:' + (image.mimeType || 'image/jpeg') + ';base64,' + image.base64 };
+        }
+      } catch (err) { failure = err.message || 'Could not read this photo. Please try again.'; }
+      finally { scanning.current = false; }
+      web.current?.injectJavaScript('window.vacuumScreens.receive(...' + JSON.stringify([msg.key,result,failure]) + ')');
+      return;
+    }
+    if (msg.type === 'visual-search' && Number.isSafeInteger(msg.key)) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000);
+      let result = null, failure = null;
+      try {
+        const endpoint = process.env.EXPO_PUBLIC_VISUAL_SEARCH_URL || '';
+        if (!/^https:\/\//.test(endpoint) || !scanPhoto.current) throw new Error('Photo matching is not connected yet. Search by number or contact fitment support.');
+        const photo = scanPhoto.current;
+        const file = await fetch(photo.uri);
+        const body = await file.blob();
+        if (body.size > 5000000) throw new Error('Choose a photo smaller than 5 MB.');
+        const response = await fetch(endpoint, {method:'POST', headers:{'Content-Type':photo.mimeType || 'image/jpeg'}, body, signal:controller.signal});
+        if (!response.ok) throw new Error('Photo matching is unavailable. Try again or search by number.');
+        const data = await response.json();
+        if (!Array.isArray(data.ids)) throw new Error('Photo matching returned an invalid response.');
+        result = {ids:data.ids.filter(id => typeof id === 'string' && /^gid:\/\/shopify\/Product\/\d+$/.test(id)).slice(0,5)};
+      } catch (err) { failure = controller.signal.aborted ? 'Photo matching took too long. Please try again.' : err.message; }
+      finally { clearTimeout(timeout); }
+      web.current?.injectJavaScript('window.vacuumScreens.receive(...' + JSON.stringify([msg.key,result,failure]) + ')');
+      return;
+    }
+    if (msg.type === 'share' && typeof msg.title === 'string') {
+      const url = typeof msg.url === 'string' && /^https:\/\//i.test(msg.url) ? msg.url : '';
+      Share.share({ title: msg.title, message: msg.title + (url ? '\n' + url : '') }).catch(() => {});
+      return;
+    }
     if (msg.type === 'link') {
-      if (['mailto:support@vacuumpro.com', 'tel:+18885943555', 'https://shop.com/'].includes(msg.url)) {
+      let productLink = false;
+      try {
+        const url = new URL(msg.url);
+        productLink = url.protocol === 'https:' && ['www.vacuumpro.com', 'vacuumpro.com', shopDomain].includes(url.hostname) && url.pathname.startsWith('/products/');
+      } catch {}
+      if (['mailto:support@vacuumpro.com', 'tel:+18885943555', 'https://shop.com/',
+        'https://www.vacuumpro.com/pages/shipping-policy',
+        'https://www.vacuumpro.com/pages/returns-refunds',
+        'https://www.vacuumpro.com/pages/fitment-guarantee'].includes(msg.url) || productLink) {
         Linking.openURL(msg.url).catch(() => {});
       }
       return;

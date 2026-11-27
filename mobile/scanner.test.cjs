@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const {scanIdentifiers} = require('./scan-identifiers');
+assert.deepEqual(scanIdentifiers('ORECK\nMODEL NO: XL2100\n120V 60HZ\nSerial: 123456789'), ['XL2100']);
+assert.equal(scanIdentifiers('MODEL\nFH51000\nPart # 440005536')[0], 'FH51000');
+assert.deepEqual(scanIdentifiers('a black rubber vacuum belt'), []);
+assert.equal(scanIdentifiers('Part No. 160147AG')[0], '160147AG');
+assert.equal(scanIdentifiers('Model XL2I00')[0], 'XL2I00');
+assert.deepEqual(scanIdentifiers('19HORT\n30-Day Return\nDyson 967040-01 Brush Bar Replacement\nAssembly - 19HORT & Long Tab\nSKU: 967040-01\n2026\n120V\n25.99'), ['967040-01']);
+assert.equal(scanIdentifiers('19HORT\nDyson 967040 - 01 Brush Bar Replacement')[0], '967040-01');
+assert.deepEqual(scanIdentifiers('19HORT\n30-DAY\n120V\n50HZ\n2026'), []);
+assert.equal(scanIdentifiers('Model: V8')[0], 'V8');
+assert.equal(scanIdentifiers('DEMO-V100')[0], 'DEMO-V100');
+assert.equal(scanIdentifiers('DC07')[0], 'DC07');
+console.log('Scanner identifier checks passed');

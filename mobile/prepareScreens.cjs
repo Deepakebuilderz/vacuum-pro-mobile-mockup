@@ -14,6 +14,7 @@ module.exports = function prepareScreens() {
   const files = {
     'styles.css': read('styles.css'),
     'app.js': read('app.js'),
+    'finder.js': read('finder.js'),
     'pages.js': 'const pages = ' + JSON.stringify(pages) + ';',
   };
   for (const name of ['shell.html', 'session.js', 'catalog-ui.js', 'host.js']) {
