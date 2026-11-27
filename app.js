@@ -152,13 +152,19 @@ function saveState() {
   }));
 }
 
+function openScreenFile(file, replace = false) {
+  if (typeof mobileScreens !== 'undefined') return mobileScreens.open(file);
+  if (replace) location.replace(file);
+  else location.assign(file);
+}
+
 function render(next) {
   saveState();
   if (next === page) {
     paint(page, screenContent);
     return;
   }
-  location.assign(routes[next] || routes.welcome);
+  openScreenFile(routes[next] || routes.welcome);
 }
 
 function mountScreen(content) {
@@ -176,7 +182,7 @@ function reloadScreen() {
   if (['delivery', 'payment', 'failure'].includes(page) && !checkoutReady) next = 'checkout';
   if (['checkout', 'delivery', 'payment', 'failure'].includes(page) && !qty) next = 'cart';
   if (next !== page) {
-    location.replace(routes[next]);
+    openScreenFile(routes[next], true);
     return;
   }
   paint(page, screenContent);
@@ -225,7 +231,7 @@ document.addEventListener('click',e=>{
  const go=e.target.closest('button[data-go]')?.dataset.go;if(!go)return; if(go==='sample-number'){const field=view.querySelector('input[name=query]');field.value='430001047';field.focus();return}
  if(go.startsWith('item-')){current=Number(go.slice(5));if(page!=='product')productSource=page;return render('product')}
  if(go==='toggle-wishlist'){
-  const sku=catalog[current].sku;
+  const sku=catalog[current].id || catalog[current].sku;
   const control=e.target.closest('button[data-go]');
   const saved=!wishlist.includes(sku);
   wishlist=saved?[...wishlist,sku]:wishlist.filter(item=>item!==sku);

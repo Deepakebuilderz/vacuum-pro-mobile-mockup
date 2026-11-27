@@ -1,0 +1,24 @@
+{
+  "name": "vacuum-pro-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "bundle": "expo export --platform all"
+  },
+  "dependencies": {
+    "@expo/dom-webview": "57.0.1",
+    "expo-file-system": "57.0.7",
+    "expo": "57.0.26",
+    "expo-dev-client": "57.0.19",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "5.7.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Vacuum PRO",
+    "slug": "vacuum-pro-mobile",
+    "version": "0.1.0",
+    "platforms": ["android", "ios"],
+    "userInterfaceStyle": "light",
+    "ios": { "bundleIdentifier": "com.vacuumpro.mobile.dev" },
+    "android": { "package": "com.vacuumpro.mobile.dev" },
+    "plugins": ["expo-dev-client"]
+  }
+}
