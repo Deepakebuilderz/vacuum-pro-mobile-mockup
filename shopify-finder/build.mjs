@@ -1,0 +1,10 @@
+import {build} from 'esbuild';
+import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
+await mkdir('generated',{recursive:true});
+await mkdir('extensions/part-finder/assets',{recursive:true});
+const adapter=await readFile('../mobile/screens/catalog-ui.js','utf8');
+await writeFile('generated/matching.mjs',adapter.slice(adapter.indexOf('function modelEntries'),adapter.indexOf('function metafieldText'))+'\nexport {finderMatch};\n');
+await build({entryPoints:['src/finder.js'],bundle:true,minify:true,format:'iife',outfile:'extensions/part-finder/assets/finder.js',target:['safari15','chrome96']});
+await build({entryPoints:['src/ocr.js'],bundle:true,minify:true,format:'iife',globalName:'VacuumFinderOCR',outfile:'extensions/part-finder/assets/ocr.js',target:['safari15','chrome96']});
+await copyFile('node_modules/tesseract.js/dist/worker.min.js','extensions/part-finder/assets/worker.min.js');
+console.log('Finder assets built; matching and OCR number filtering reuse the mobile implementation.');

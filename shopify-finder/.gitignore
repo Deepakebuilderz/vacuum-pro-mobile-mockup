@@ -1,0 +1,9 @@
+node_modules/
+.shopify/
+.env*
+!.env.example
+*.traineddata
+generated/
+extensions/part-finder/assets/finder.js
+extensions/part-finder/assets/ocr.js
+extensions/part-finder/assets/worker.min.js

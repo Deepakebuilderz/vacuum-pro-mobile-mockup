@@ -1,0 +1,189 @@
+{
+  "sections": {
+    "1795839294a5b9ab3d": {
+      "type": "apps",
+      "blocks": {
+        "vacuum_pro_part_finder_part_finder_fXctX6": {
+          "type": "shopify://apps/vacuum-pro-part-finder/blocks/finder-banner/01a22059-5a89-7584-bfd6-36a199fd5658",
+          "settings": {
+            "finder_page": "part-finder",
+            "heading": "Not sure which part fits?",
+            "description": "Search by model or part number, or scan your label.",
+            "button_text": "Find your part",
+            "accent": "#1c3158"
+          }
+        }
+      },
+      "block_order": [
+        "vacuum_pro_part_finder_part_finder_fXctX6"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_size": "h3",
+        "subheading": "",
+        "header_alignment": "center",
+        "container": "container",
+        "background_color": "",
+        "padding_top": 20,
+        "padding_bottom": 20,
+        "custom_class": ""
+      }
+    },
+    "16225125199f82d8fe": {
+      "type": "icon-box",
+      "blocks": {
+        "16225125199f82d8fe-0": {
+          "type": "iconbox",
+          "settings": {
+            "card_color_scheme": "",
+            "image_by_url": "",
+            "title": "Free Shipping",
+            "description": "<p>Free Shipping for orders over £130</p>",
+            "link": "",
+            "button_label": "",
+            "button_link": "",
+            "button_style": "sf__btn-link",
+            "button_size": ""
+          }
+        },
+        "16225125199f82d8fe-1": {
+          "type": "iconbox",
+          "settings": {
+            "card_color_scheme": "",
+            "image_by_url": "",
+            "title": "Money Guarantee",
+            "description": "<p>Within 30 days for an exchange.</p>",
+            "link": "",
+            "button_label": "",
+            "button_link": "",
+            "button_style": "sf__btn-link",
+            "button_size": ""
+          }
+        },
+        "16225125199f82d8fe-2": {
+          "type": "iconbox",
+          "settings": {
+            "card_color_scheme": "",
+            "image_by_url": "",
+            "title": "Online Support",
+            "description": "<p>24 hours a day, 7 days a week</p>",
+            "link": "",
+            "button_label": "",
+            "button_link": "",
+            "button_style": "sf__btn-link",
+            "button_size": ""
+          }
+        },
+        "71deafbb-3baf-443a-a087-3f7b8af7b9fa": {
+          "type": "iconbox",
+          "settings": {
+            "card_color_scheme": "",
+            "image_by_url": "",
+            "title": "Flexible Payment",
+            "description": "<p>Pay with Multiple Credit Cards</p>",
+            "link": "",
+            "button_label": "",
+            "button_link": "",
+            "button_style": "sf__btn-link",
+            "button_size": ""
+          }
+        }
+      },
+      "block_order": [
+        "16225125199f82d8fe-0",
+        "16225125199f82d8fe-1",
+        "16225125199f82d8fe-2",
+        "71deafbb-3baf-443a-a087-3f7b8af7b9fa"
+      ],
+      "custom_css": [
+        ".m-icon-box__icon {margin-right: 12px;}",
+        ".m-icon-box--small {border-top-width: 0;}"
+      ],
+      "settings": {
+        "container": "container-fluid",
+        "color_scheme": "",
+        "heading": "",
+        "heading_size": "h3",
+        "subheading": "",
+        "description": "",
+        "header_alignment": "center",
+        "item_per_row": 4,
+        "item_gap": 30,
+        "item_gap_mobile": 10,
+        "card_style": "horizontal",
+        "image_max_width": "60px",
+        "content_alignment": "start",
+        "hover_effect": "none",
+        "enable_slider": false,
+        "show_pagination": true,
+        "show_navigation": true,
+        "use_scroll_mobile": false,
+        "use_grid_column_mb": false,
+        "padding_top": 46,
+        "padding_bottom": 46,
+        "custom_class": "m-icon-box--small",
+        "animations": "inherit"
+      }
+    },
+    "product_tabs_mmRmEB": {
+      "type": "product-tabs",
+      "blocks": {
+        "tab_39AFf6": {
+          "type": "tab",
+          "settings": {
+            "title": "Tab 1",
+            "collection": "vacuum"
+          }
+        },
+        "tab_PtnGtj": {
+          "type": "tab",
+          "settings": {
+            "title": "Tab 2",
+            "collection": "all"
+          }
+        }
+      },
+      "block_order": [
+        "tab_39AFf6",
+        "tab_PtnGtj"
+      ],
+      "name": "Product tabs",
+      "settings": {
+        "heading": "Product tabs",
+        "heading_size": "h3",
+        "subheading": "",
+        "description": "",
+        "header_alignment": "center",
+        "container": "container-fluid",
+        "color_scheme": "",
+        "tab_header": "horizontal",
+        "limit": 30,
+        "show_button": false,
+        "button_type": "link",
+        "button_label": "View all",
+        "button_style": "m-button--primary",
+        "button_size": "",
+        "pcard_layout": "",
+        "pcard_image_ratio": "",
+        "show_vendor": false,
+        "items_per_row": 2,
+        "item_gap": 30,
+        "enable_slider": true,
+        "show_navigation": true,
+        "show_pagination": false,
+        "mobile_disable_slider": false,
+        "use_scroll_mobile": true,
+        "item_gap_mobile": 16,
+        "padding_top": 50,
+        "padding_bottom": 50,
+        "custom_class": "",
+        "animations": "inherit"
+      }
+    }
+  },
+  "order": [
+    "1795839294a5b9ab3d",
+    "16225125199f82d8fe",
+    "product_tabs_mmRmEB"
+  ]
+}

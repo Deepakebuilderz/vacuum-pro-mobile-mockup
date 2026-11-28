@@ -1,0 +1,14 @@
+# Run `shopify app config link` to generate the real shopify.app.toml.
+client_id = "REPLACE_WITH_LINKED_SHOPIFY_APP_CLIENT_ID"
+name = "Vacuum PRO Part Finder"
+application_url = "https://shopify.dev/apps/default-app-home"
+embedded = true
+
+[build]
+dev_store_url = "ebuilderz-testing-store.myshopify.com"
+
+[access_scopes]
+scopes = ""
+
+[auth]
+redirect_urls = []

@@ -1,0 +1,6 @@
+{% assign finder_url = routes.root_url | append: 'pages/part-finder' %}
+{% if block.settings.finder_page != blank %}{% assign finder_url = block.settings.finder_page.url %}{% endif %}
+<aside class="vpf-product-entry" {{ block.shopify_attributes }}><span class="vpf-product-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/></svg></span><div><strong>{{ block.settings.heading | escape }}</strong><p>{{ block.settings.description | escape }}</p><a href="{{ finder_url | escape }}">{{ block.settings.link_text | escape }} <span aria-hidden="true">→</span></a></div></aside>
+{% schema %}
+{"name":"Finder compatibility link","target":"section","stylesheet":"finder.css","settings":[{"type":"page","id":"finder_page","label":"Finder page"},{"type":"text","id":"heading","label":"Heading","default":"Need help checking compatibility?"},{"type":"text","id":"description","label":"Description","default":"Find parts using your vacuum’s model number."},{"type":"text","id":"link_text","label":"Link label","default":"Check your model"}]}
+{% endschema %}

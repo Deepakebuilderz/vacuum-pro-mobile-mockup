@@ -1,0 +1,41 @@
+{
+  "sections": {
+    "finder": {
+      "type": "apps",
+      "blocks": {
+        "finder": {
+          "type": "shopify://apps/vacuum-pro-part-finder/blocks/part-finder/01a22059-5a89-7584-bfd6-36a199fd5658",
+          "settings": {
+            "heading": "Find your part",
+            "collection": "vacuum-pro-finder-parts",
+            "accent": "#1c3158",
+            "help_url": "",
+            "enable_camera": true,
+            "enable_gallery": true,
+            "show_suggestions": true,
+            "suggestion_count": 4,
+            "found_label": "Product found",
+            "not_found_label": "Product not found"
+          }
+        }
+      },
+      "block_order": [
+        "finder"
+      ],
+      "settings": {
+        "heading": "",
+        "heading_size": "h3",
+        "subheading": "",
+        "header_alignment": "center",
+        "container": "container",
+        "background_color": "",
+        "padding_top": 10,
+        "padding_bottom": 20,
+        "custom_class": ""
+      }
+    }
+  },
+  "order": [
+    "finder"
+  ]
+}
